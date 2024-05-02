@@ -1,63 +1,82 @@
-pipeline {
+pipeline{
     agent any
-    triggers {
-        pollSCM '* * * * *'
+    
+    environment {
+        TESTING_ENVIRONMENT = 'testing_environment_name'
+        PRODUCTION_ENVIRONMENT = 'ClintBidner_ProductionEnv'
+        EMAIL = 'c220534168@gmail.com'
     }
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building code using npm'
+    
+    stages{
+        stage('Build'){
+            steps{
+                echo "In this stage, a build automation tool like Maven (primarily Java) or CircleCI will be used to compile the code and package the code."
+                echo "Tool suggestion: CircleCI."
             }
         }
-        stage('Unit and Integration Tests') {
-            steps {
-                echo 'Running unit tests with Jest'
-                echo 'Running integration tests with Cypress'
+        stage('Unit and integration tests'){
+            steps{
+                echo "Unit tests can be automated here and utilised to test components function as expected/intended in isolation."
+                echo "Different components of the software application will be tested together using integration tests."
+                echo "Tool suggestion: Junit for unit testing. CircleCI for integration testing."
             }
-        }
-        stage('Code Analysis') {
-            steps {
-                echo 'Analyzing code with ESLint'
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                echo 'Scanning for vulnerabilities with Node Security Project (NSP)'
-            }
-            post {
-                success {
-                    emailext body: '$DEFAULT_CONTENT',
-                            subject: 'sit223-sit753-6.1c - Security Scan Stage - Successful!'
-                }
-                failure {
-                    emailext body: '$DEFAULT_CONTENT',
-                            subject: 'sit223-sit753-6.1c - Security Scan Stage - Failed!'
+            post{
+                success{
+                    emailext subject: "Unit and integration test SUCCESS",
+                        body: "Unit and integration tests successful.",
+                        to: "$EMAIL",
+                        attachLog: true                  
+                    }
+                failure{
+                    emailext subject: "Unit and integration test FAILURE",
+                        body: "Unit and integration tests failed.",
+                        to: "$EMAIL",
+                        attachLog: true                  
+                    }
                 }
             }
-        }
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Deploying application to staging using PM2'
+        stage('Code analysis'){
+            steps{
+                echo "Utilise one of the many plugins available for Jenkins to Check the quality of the code base and identify any areas to improve performance/catch bugs."
+                echo "Tool suggestion: Jenkins - static code analysis plug ins."
             }
         }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Running integration tests on staging environment with JEST'
+        stage('Security scan'){
+            steps{
+                echo "Ensure the integrity and security of the code using an integrated tool."
+                echo "Tool suggestion: Spectral."
             }
-            post {
-                success {
-                    emailext body: '$DEFAULT_CONTENT',
-                            subject: 'sit223-sit753-6.1c - Test Stage - Successful!'
+            post{
+                success{
+                    emailext subject: "Security scan SUCCESS",
+                        body: "Security scan successful.",
+                        to: "$EMAIL",
+                        attachLog: true                  
+                    }
+                failure{
+                    emailext subject: "Security scan FAILURE",
+                        body: "Security scan failed.",
+                        to: "$EMAIL",
+                        attachLog: true 
                 }
-                failure {
-                    emailext body: '$DEFAULT_CONTENT',
-                            subject: 'sit223-sit753-6.1c - Test Stage - Failed!'
-                }
             }
         }
-        stage('Deploy to Production') {
-            steps {
-                echo 'Deploying application to PM2 production server'
+        stage('Deploy to staging'){
+            steps{
+                echo "Use jenkins to deploy code changes automatically when pushed to the GitHub repo."   
+                echo "Tool suggestion: AWS CodeDeploy."
+            }
+        }
+        stage('Integration tests on staging'){
+            steps{
+                echo "Ensure quality in a production like environment through integration tests on the staging environment."
+                echo "Tool suggestion: CircleCI."
+            }
+        }
+        stage('Deploy to production'){
+            steps{
+                echo "Deploy the application to a production environment."
+                echo "Tool suggestion: AWS EC2."
             }
         }
     }
