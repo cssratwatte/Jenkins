@@ -1,46 +1,64 @@
 pipeline {
     agent any
-    
+    triggers {
+        pollSCM '* * * * *'
+    }
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/cssratwatte/Jenkins.git'
-            }
-        }
         stage('Build') {
             steps {
-                sh 'mvn clean package'  // Assuming Maven is installed and 'mvn' command works
+                echo 'Building code using npm'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                // Placeholder for running unit and integration tests
-                sh 'mvn test'  // Assuming Maven is used for running tests
+                echo 'Running unit tests with Jest'
+                echo 'Running integration tests with Cypress'
+            }
+        }
+        stage('Code Analysis') {
+            steps {
+                echo 'Analyzing code with ESLint'
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                echo 'Scanning for vulnerabilities with Node Security Project (NSP)'
             }
             post {
-                failure {
-                    mail to: 'chathurniratwatte@gmail.com',
-                        subject: "Failure: Unit and Integration Tests",
-                        body: "Unit and Integration Tests failed. Please investigate."
-                }
                 success {
-                    mail to: 'chathurniratwatte@gmail.com',
-                        subject: "Success: Unit and Integration Tests",
-                        body: "Unit and Integration Tests passed. Congratulations!"
+                    emailext body: '$DEFAULT_CONTENT',
+                            subject: 'sit223-sit753-6.1c - Security Scan Stage - Successful!'
+                }
+                failure {
+                    emailext body: '$DEFAULT_CONTENT',
+                            subject: 'sit223-sit753-6.1c - Security Scan Stage - Failed!'
                 }
             }
         }
-        // Add more stages for code analysis, security scan, deployment, etc.
-    }
-    post {
-        always {
-            // Send email with build status and attach build log
-            emailext (
-                to: 'chathurniratwatte@gmail.com',
-                subject: "Pipeline Status: ${currentBuild.result}",
-                body: "Pipeline has completed with status: ${currentBuild.result}.",
-                attachmentsPattern: '**/build.log'  // Adjust to match the actual location of build logs
-            )
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploying application to staging using PM2'
+            }
+        }
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Running integration tests on staging environment with JEST'
+            }
+            post {
+                success {
+                    emailext body: '$DEFAULT_CONTENT',
+                            subject: 'sit223-sit753-6.1c - Test Stage - Successful!'
+                }
+                failure {
+                    emailext body: '$DEFAULT_CONTENT',
+                            subject: 'sit223-sit753-6.1c - Test Stage - Failed!'
+                }
+            }
+        }
+        stage('Deploy to Production') {
+            steps {
+                echo 'Deploying application to PM2 production server'
+            }
         }
     }
 }
