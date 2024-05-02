@@ -4,7 +4,7 @@ pipeline{
     environment {
         TESTING_ENVIRONMENT = 'testing_environment_name'
         PRODUCTION_ENVIRONMENT = 'ClintBidner_ProductionEnv'
-        EMAIL = 'c220534168@gmail.com'
+        EMAIL = 'chathurniratwatte@gmail.com'
     }
     
     stages{
