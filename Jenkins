@@ -1,81 +1,82 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage("Build") {
+        stage('Checkout') {
             steps {
-                echo  'Building project to compile and package using Maven.'
+                git branch: 'main', url: 'https://github.com/cssratwatte/Jenkins-Pipeline.git'
             }
         }
-
-        stage("Unit and Integration Tests") {
+        stage('Build') {
             steps {
-                echo 'JUnit test for code function.'
-                echo 'Integration Test working together.'
+                echo "Building project using Maven"
             }
-            post{ 
-                    success{
-                        mail to: "chathurniratwatte@gmail.com",
-                        subject: "Success: JUnit and Integration test successful.",
-                        body: "Stage is working."
-                    }
-                    failure{
-                        mail to: "chathurniratwatte@gmail.com",
-                        subject: "Unsuccess: JUnit and Integration test failure.",
-                        body: "Stage is not working. Please try to test again."
-                    }
+        }
+        stage('Unit and Integration Tests') {
+            steps {
+                echo "Unit and Integration Tests working using Maven"
+            }
+            post {
+                failure {
+                    mail body: "Stage is not working. Please investigate.",
+                         subject: "Failure: Unit and Integration Tests",
+                         to: 'chathurniratwatte@gmail.com',
+                         attachmentsPattern: '**/*'
                 }
-        }
-
-        stage("Code Analysis") {
-            steps {
-                 echo 'Performing code analysis using SonarQube'
-            }
-        }
-
-        stage("Security Scan") {
-            steps {
-               echo 'Performing security scan using SonarQube'
-            }
-             post{ 
-                    success{
-                        mail to: "chathurniratwatte@gmail.com",
-                        subject: "Success: Security scans successful.",
-                        body: "Scan is secure."
-                    }
-                    failure{
-                        mail to: "chathurniratwatte@gmail.com",
-                        subject: "Unsuccess: Security scans failure.",
-                        body: "Scan is not secure. Please try to protect application."
-                    }
+                success {
+                    mail body: "Stage is working. Congratulations!",
+                         subject: "Success: Unit and Integration Tests",
+                         to: 'chathurniratwatte@gmail.com',
+                         attachmentsPattern: '**/*'
                 }
-        }
-
-        stage("Deploy to Staging") {
-            steps {
-                 echo 'Deploy to staging sever AWS EC2 s3://staging-bucket/'
             }
         }
-
-        stage("Integration Tests on Staging") {
+        stage('Code Analysis') {
+            steps {
+                echo 'Performing code analysis using Checkstyle'
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                echo 'Performing security scan using SonarQube'
+            }
+            post {
+                failure {
+                    mail body: "Stage is not working. Please investigate.",
+                         subject: "Failure: Security Scan",
+                         to: 'chathurniratwatte@gmail.com',
+                         attachmentsPattern: '**/*'
+                }
+                success {
+                    mail body: "Stage is working. Congratulations!",
+                         subject: "Success: Security Scan",
+                         to: 'chathurniratwatte@gmail.com',
+                         attachmentsPattern: '**/*'
+                }
+            }
+        }
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploy to staging server AWS EC2'
+            }
+        }
+        stage('Integration Tests on Staging') {
             steps {
                 echo 'Run Integration Tests on Staging environment'
             }
         }
-
-        stage("Deploy to Production") {
+        stage('Deploy to Production') {
             steps {
-                echo'Deploy to Production server AWS EC2'
+                echo 'Deploy to Production server AWS EC2'
             }
-        }
+        }       
     }
-
     post {
-        success {
-            echo 'Deployment to production successful!'
-        }
-        failure {
-            echo 'Deployment failed!'
+        always {
+            mail body: "Pipeline has completed with status: ${currentBuild.result}.",
+                 subject: "Pipeline Status: ${currentBuild.result}",
+                 to: 'chathurniratwatte@gmail.com',
+                 attachmentsPattern: '**/*'
         }
     }
 }
