@@ -4,79 +4,43 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/cssratwatte/Jenkins.git'
+                git branch: 'main', url: 'https://github.com/cssratwatte/Jenkins-Pipeline.git'
             }
         }
         stage('Build') {
             steps {
-                echo "Building project using Maven"
+                sh 'mvn clean package'  // Assuming Maven is installed and 'mvn' command works
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo "Unit and Integration Tests working using Maven"
+                // Placeholder for running unit and integration tests
+                sh 'mvn test'  // Assuming Maven is used for running tests
             }
             post {
                 failure {
-                    mail body: "Stage is not working. Please investigate.",
-                         subject: "Failure: Unit and Integration Tests",
-                         to: 'chathurniratwatte@gmail.com',
-                         attachmentsPattern: '**/*'
+                    mail to: 'chathurniratwatte@gmail.com',
+                        subject: "Failure: Unit and Integration Tests",
+                        body: "Unit and Integration Tests failed. Please investigate."
                 }
                 success {
-                    mail body: "Stage is working. Congratulations!",
-                         subject: "Success: Unit and Integration Tests",
-                         to: 'chathurniratwatte@gmail.com',
-                         attachmentsPattern: '**/*'
+                    mail to: 'chathurniratwatte@gmail.com',
+                        subject: "Success: Unit and Integration Tests",
+                        body: "Unit and Integration Tests passed. Congratulations!"
                 }
             }
         }
-        stage('Code Analysis') {
-            steps {
-                echo 'Performing code analysis using Checkstyle'
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                echo 'Performing security scan using SonarQube'
-            }
-            post {
-                failure {
-                    mail body: "Stage is not working. Please investigate.",
-                         subject: "Failure: Security Scan",
-                         to: 'chathurniratwatte@gmail.com',
-                         attachmentsPattern: '**/*'
-                }
-                success {
-                    mail body: "Stage is working. Congratulations!",
-                         subject: "Success: Security Scan",
-                         to: 'chathurniratwatte@gmail.com',
-                         attachmentsPattern: '**/*'
-                }
-            }
-        }
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Deploy to staging server AWS EC2'
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Run Integration Tests on Staging environment'
-            }
-        }
-        stage('Deploy to Production') {
-            steps {
-                echo 'Deploy to Production server AWS EC2'
-            }
-        }       
+        // Add more stages for code analysis, security scan, deployment, etc.
     }
     post {
         always {
-            mail body: "Pipeline has completed with status: ${currentBuild.result}.",
-                 subject: "Pipeline Status: ${currentBuild.result}",
-                 to: 'chathurniratwatte@gmail.com',
-                 attachmentsPattern: '**/*'
+            // Send email with build status and attach build log
+            emailext (
+                to: 'chathurniratwatte@gmail.com',
+                subject: "Pipeline Status: ${currentBuild.result}",
+                body: "Pipeline has completed with status: ${currentBuild.result}.",
+                attachmentsPattern: '**/build.log'  // Adjust to match the actual location of build logs
+            )
         }
     }
 }
